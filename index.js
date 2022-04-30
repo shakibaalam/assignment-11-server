@@ -25,7 +25,6 @@ async function run() {
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
-            console.log('products added');
         });
 
         //for one item get
@@ -34,7 +33,21 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await productCollection.findOne(query);
             res.send(result);
-        })
+        });
+
+        //for count
+        app.get('/products/:id/quantity', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await productCollection.findOne(query);
+            const quantityCount = result.quantity;
+            res.send(quantityCount);
+        });
+
+
+
+
+
     } finally {
         // await client.close();
     }
