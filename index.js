@@ -44,7 +44,21 @@ async function run() {
             res.send(quantityCount);
         });
 
-
+        //update count 
+        app.put('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatePd = req.body
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    quantity: updatePd.count
+                }
+            }
+            const result = await productCollection.updateOne(filter, updateDoc, options);
+            res.send(updatePd);
+            console.log(updatePd);
+        })
 
 
 
