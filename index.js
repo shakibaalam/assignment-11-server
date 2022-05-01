@@ -66,8 +66,14 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await productCollection.deleteOne(query);
             res.send(result)
-        })
+        });
 
+        //for add new item
+        app.post('/products', async (req, res) => {
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);;
+            res.send(result);
+        });
 
 
     } finally {
