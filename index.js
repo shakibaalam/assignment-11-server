@@ -25,6 +25,7 @@ async function run() {
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
+
         });
 
         //for one item get
@@ -68,12 +69,23 @@ async function run() {
             res.send(result)
         });
 
+
         //for add new item
         app.post('/products', async (req, res) => {
             const newProduct = req.body;
-            const result = await productCollection.insertOne(newProduct);;
+            const result = await productCollection.insertOne(newProduct);
             res.send(result);
         });
+
+        //get my new item
+        app.get('/newProducts', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const cursor = productCollection.find(query);
+            const newProducts = await cursor.toArray();
+            res.send(newProducts);
+        });
+
 
 
     } finally {
