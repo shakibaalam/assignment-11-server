@@ -10,6 +10,22 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
+function verifyJwt(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        // console.log('decoded', decoded);
+        req.decoded = decoded;
+        next();
+    })
+}
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.mlfwx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -18,6 +34,13 @@ async function run() {
     try {
         await client.connect();
         const productCollection = client.db('grocery').collection('items');
+
+        //jwt auth
+        app.post('/login', async (req, res) => {
+            const user = req.body;
+            const accessToken = jwt.sign(user, process.env.SECRET_TOKEN, { expiresIn: '1y' });
+            res.send({ accessToken });
+        })
 
         //for all item get
         app.get('/products', async (req, res) => {
@@ -77,13 +100,19 @@ async function run() {
             res.send(result);
         });
 
-        //get my new item
-        app.get('/newProducts', async (req, res) => {
+        //get my new item with jwt verification
+        app.get('/newProducts', verifyJwt, async (req, res) => {
+            const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            const query = { email: email };
-            const cursor = productCollection.find(query);
-            const newProducts = await cursor.toArray();
-            res.send(newProducts);
+            if (email === decodedEmail) {
+                const query = { email: email };
+                const cursor = productCollection.find(query);
+                const newProducts = await cursor.toArray();
+                res.send(newProducts);
+            }
+            else {
+                res.status(403).send({ message: 'forbidden access' })
+            }
         });
 
 
