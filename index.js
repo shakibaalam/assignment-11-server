@@ -65,7 +65,9 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await productCollection.findOne(query);
             const quantityCount = result.quantity;
-            res.send(quantityCount);
+            const soldCount = result.sold;
+            // console.log(quantityCount, soldCount);
+            res.send({ quantityCount, soldCount });
         });
 
         //update count 
